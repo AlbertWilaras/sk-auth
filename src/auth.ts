@@ -141,13 +141,11 @@ export class Auth {
     const { url } = event;
 
     if (url.pathname === this.getPath("signout")) {
-      const token = this.setToken(event.request.headers, {});
-      const jwt = this.signToken(token);
 
       if (method === "POST") {
         return {
           headers: {
-            "set-cookie": `svelteauthjwt=${jwt}; Path=/; HttpOnly`,
+            "set-cookie": `svelteauthjwt=deleted; Path=/; HttpOnly`,
           },
           body: {
             signout: true,
@@ -160,7 +158,7 @@ export class Auth {
       return {
         status: 302,
         headers: {
-          "set-cookie": `svelteauthjwt=${jwt}; Path=/; HttpOnly`,
+          "set-cookie": `svelteauthjwt=deleted; Path=/; HttpOnly`,
           Location: redirect,
         },
       };
