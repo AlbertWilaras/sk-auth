@@ -46,12 +46,14 @@ export class Auth {
 
   async getToken(headers: any) {
     if (!headers.get("cookie")) {
+      console.log('Empty cookies');
       return null;
     }
 
     const cookies = cookie.parse(headers.get("cookie"));
 
     if (!cookies.svelteauthjwt) {
+      console.log('no JWT');
       return null;
     }
 
@@ -59,11 +61,13 @@ export class Auth {
     try {
       token = (jsonwebtoken.verify(cookies.svelteauthjwt, this.getJwtSecret()) || {}) as JWT;
     } catch {
+      console.log('Invalid jwt');
       return null;
     }
 
     if (this.config?.callbacks?.jwt) {
       token = await this.config.callbacks.jwt(token);
+      console.log('calling jwt callback');
     }
 
     return token;
@@ -141,11 +145,13 @@ export class Auth {
     const { url } = event;
 
     if (url.pathname === this.getPath("signout")) {
-
+      const token = this.setToken(event.request.headers, {});
+      const jwt = this.signToken(token);
+      
       if (method === "POST") {
         return {
           headers: {
-            "set-cookie": `svelteauthjwt=deleted; Path=/; HttpOnly`,
+            "set-cookie": `svelteauthjwt=${jwt}; Path=/; HttpOnly`,
           },
           body: {
             signout: true,
@@ -158,7 +164,7 @@ export class Auth {
       return {
         status: 302,
         headers: {
-          "set-cookie": `svelteauthjwt=deleted; Path=/; HttpOnly`,
+          "set-cookie": `svelteauthjwt=${jwt}; Path=/; HttpOnly`,
           Location: redirect,
         },
       };
@@ -218,7 +224,7 @@ export class Auth {
 
       return { user: token.user };
     }
-
+    console.log('getSession ------ no token');
     return {};
   };
 }
