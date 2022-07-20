@@ -120,17 +120,18 @@ export class Auth {
     const { headers } = event.request;
     const { url } = event;
     const [profile, redirectUrl] = await provider.callback(event, this);
-
+    console.log(profile);
     let token = (await this.getToken(headers)) ?? { user: {} };
     if (this.config?.callbacks?.jwt) {
       token = await this.config.callbacks.jwt(token, profile);
     } else {
+      console.log(headers);
       token = this.setToken(headers, { user: profile });
     }
 
     const jwt = this.signToken(token);
     const redirect = await this.getRedirectUrl(url.host, redirectUrl ?? undefined);
-
+    console.log(redirect);
     return {
       status: 302,
       headers: {
